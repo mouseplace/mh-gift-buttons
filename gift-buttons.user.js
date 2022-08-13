@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
 // @version      1.0.1
-// @description  Add buttons to easily accept and return all gifts.
+// @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
 // @namespace    bradp
