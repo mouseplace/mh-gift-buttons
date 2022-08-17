@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.0.0
+// @version      1.1.0
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -12,47 +12,101 @@
 // ==/UserScript==
 
 ((function () {
+	/**
+	 * Add styles to the page.
+	 *
+	 * @param {string} styles The styles to add.
+	 */
+	const addStyles = (styles) => {
+		const existingStyles = document.getElementById('mh-mouseplace-custom-styles');
+
+		if (existingStyles) {
+			existingStyles.innerHTML += styles;
+		} else {
+			const style = document.createElement('style');
+			style.id = 'mh-mouseplace-custom-styles';
+
+			style.innerHTML = styles;
+			document.head.appendChild(style);
+		}
+	};
+
+	/**
+	 * Do something when ajax requests are completed.
+	 *
+	 * @param {Function} callback The callback to call when an ajax request is completed.
+	 * @param {string}   url      The url to match. If not provided, all ajax requests will be matched.
+	 */
+	const onAjaxRequest = (callback, url) => {
+		const req = XMLHttpRequest.prototype.open;
+		XMLHttpRequest.prototype.open = function () {
+			this.addEventListener('load', function () {
+				const response = JSON.parse(this.responseText);
+				if (response.success) {
+					if (! url) {
+						callback(this);
+						return;
+					}
+
+					if (this.responseURL.indexOf(url) !== -1) {
+						callback(this);
+					}
+				}
+			});
+			req.apply(this, arguments);
+		};
+	};
+
+	/**
+	 * Make a button.
+	 *
+	 * @param {string} text        The text to put in the button.
+	 * @param {string} buttonClass Class selector to use to grab the button.
+	 * @param {string} limitClass  Class selector to use to grab the limit.
+	 */
+	const makeButton = (text, buttonClass, limitClass) => {
+		const btn = document.createElement('a');
+		btn.innerHTML = text;
+
+		const limit = document.querySelector('.giftSelectorView-num' + limitClass + 'ActionsRemaining');
+		if (limit && limit.innerText === '0') {
+			btn.classList.add('disabled');
+			btn.classList.add('disabled');
+		} else {
+			btn.addEventListener('click', () => {
+				// eslint-disable-next-line no-undef
+				hg.views.GiftSelectorView.show();
+
+				const innerButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.' + buttonClass + ':not(.disbled):not(.selected)');
+				innerButtons.forEach((button) => {
+					button.click();
+				});
+				document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small').click();
+			});
+		}
+
+		return btn;
+	};
+
 	const makeButtons = () => {
 		if (document.getElementById('bulk-gifting-gift-buttons')) {
 			return;
 		}
 
-		const acceptButton = document.createElement('a');
-		acceptButton.innerHTML = 'Accept All';
-		acceptButton.addEventListener('click', () => {
-			// eslint-disable-next-line no-undef
-			hg.views.GiftSelectorView.show();
-			const acceptButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.claim:not(.disbled):not(.selected)');
-			acceptButtons.forEach((button) => {
-				button.click();
-			});
-			document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small').click();
-		});
-
-		const acceptAndReturnButton = document.createElement('a');
-		acceptAndReturnButton.innerHTML = 'Accept & Return All';
-		acceptAndReturnButton.addEventListener('click', () => {
-			// eslint-disable-next-line no-undef
-			hg.views.GiftSelectorView.show();
-			const acceptButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.return:not(.disbled):not(.selected)');
-			acceptButtons.forEach((button) => {
-				button.click();
-			});
-			document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small').click();
-		});
-
 		const buttonContainer = document.createElement('div');
 		buttonContainer.id = 'bulk-gifting-gift-buttons';
+
+		const acceptButton = makeButton('Accept All', 'claim', 'Claim');
 		buttonContainer.appendChild(acceptButton);
-		buttonContainer.appendChild(acceptAndReturnButton);
+
+		const returnButton = makeButton('Accept & Return All', 'return', 'Send');
+		buttonContainer.appendChild(returnButton);
 
 		const giftFooter = document.querySelector('.giftSelectorView-inbox-footer');
 		giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
 	};
 
-	(() => {
-		const style = document.createElement('style');
-		style.innerHTML = `
+	addStyles(`
 		#bulk-gifting-gift-buttons {
 			text-align: right;
 			margin: 0 0 10px;
@@ -82,21 +136,22 @@
 			background-color: #fff600;
 			margin-left: 10px;
 		}
-		`;
-		document.head.appendChild(style);
 
-		const ajaxFinished = XMLHttpRequest.prototype.open;
-		XMLHttpRequest.prototype.open = function () {
-			this.addEventListener('load', function () {
-				if (this.responseURL === 'https://www.mousehuntgame.com/managers/ajax/users/socialGift.php') {
-					makeButtons();
-				}
-			});
-			ajaxFinished.apply(this, arguments);
-		};
+		#bulk-gifting-gift-buttons a.disabled,
+		#bulk-gifting-gift-buttons a:last-child.disabled {
+			background-color: #eee;
+		}
 
-		document.querySelector('#hgbar_freegifts').addEventListener('click', function () {
-			makeButtons();
-		});
-	})();
+
+		#bulk-gifting-gift-buttons a.disabled:hover {
+			cursor: default;
+			box-shadow: 0 0 3px #ff0000;
+		}
+	`);
+
+	onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
+
+	document.querySelector('#hgbar_freegifts').addEventListener('click', function () {
+		makeButtons();
+	});
 })());
