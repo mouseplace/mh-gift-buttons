@@ -34,28 +34,38 @@
 	/**
 	 * Do something when ajax requests are completed.
 	 *
-	 * @param {Function} callback The callback to call when an ajax request is completed.
-	 * @param {string}   url      The url to match. If not provided, all ajax requests will be matched.
+	 * @param {Function} callback    The callback to call when an ajax request is completed.
+	 * @param {string}   url         The url to match. If not provided, all ajax requests will be matched.
+	 * @param {boolean}  skipSuccess Skip the success check.
 	 */
-	const onAjaxRequest = (callback, url) => {
+	const onAjaxRequest = (callback, url = null, skipSuccess = false) => {
 		const req = XMLHttpRequest.prototype.open;
 		XMLHttpRequest.prototype.open = function () {
 			this.addEventListener('load', function () {
-				const response = JSON.parse(this.responseText);
-				if (response.success) {
-					if (! url) {
-						callback(this);
+				if (this.responseText) {
+					let response = {};
+					try {
+						response = JSON.parse(this.responseText);
+					} catch (e) {
 						return;
 					}
 
-					if (this.responseURL.indexOf(url) !== -1) {
-						callback(this);
+					if (response.success || skipSuccess) {
+						if (! url) {
+							callback(this);
+							return;
+						}
+
+						if (this.responseURL.indexOf(url) !== -1) {
+							callback(this);
+						}
 					}
 				}
 			});
 			req.apply(this, arguments);
 		};
 	};
+
 
 	/**
 	 * Make a button.
