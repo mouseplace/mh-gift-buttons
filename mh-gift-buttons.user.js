@@ -66,6 +66,30 @@
 		};
 	};
 
+	/**
+	 * Send the gifts.
+	 *
+	 * @param {string} buttonClass The class of the button to click.
+	 */
+	const sendGifts = (buttonClass) => {
+		if (hg && hg.views?.GiftSelectorView?.show) { // eslint-disable-line no-undef
+			hg.views.GiftSelectorView.show(); // eslint-disable-line no-undef
+		}
+
+		const innerButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.' + buttonClass + ':not(.disbled):not(.selected)');
+		if (! innerButtons.length) {
+			return;
+		}
+
+		innerButtons.forEach((button) => {
+			button.click();
+		});
+
+		const confirm = document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small');
+		if (confirm) {
+			confirm.click();
+		}
+	};
 
 	/**
 	 * Make a button.
@@ -84,20 +108,16 @@
 			btn.classList.add('disabled');
 		} else {
 			btn.addEventListener('click', () => {
-				// eslint-disable-next-line no-undef
-				hg.views.GiftSelectorView.show();
-
-				const innerButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.' + buttonClass + ':not(.disbled):not(.selected)');
-				innerButtons.forEach((button) => {
-					button.click();
-				});
-				document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small').click();
+				sendGifts(buttonClass);
 			});
 		}
 
 		return btn;
 	};
 
+	/**
+	 * Make the buttons and add them to the page.
+	 */
 	const makeButtons = () => {
 		if (document.getElementById('bulk-gifting-gift-buttons')) {
 			return;
@@ -114,6 +134,30 @@
 
 		const giftFooter = document.querySelector('.giftSelectorView-inbox-footer');
 		giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
+	};
+
+	/**
+	 * On a sucessful send, close the modal.
+	 *
+	 * @param {Object} request The request.
+	 */
+	const checkForSuccessfulGiftSend = (request) => {
+		if (! request || 'undefined' === request.friends_sent_gifts || ! request.friends_sent_gifts.length > 1) {
+			return;
+		}
+
+		const okayBtn = document.querySelector('.giftSelectorView-confirmPopup-submitConfirmButton');
+		if (! okayBtn) {
+			return;
+		}
+
+		okayBtn.click();
+
+		if ('undefined' === typeof activejsDialog || ! activejsDialog || ! activejsDialog.hide) { // eslint-disable-line no-undef
+			return;
+		}
+
+		activejsDialog.hide(); // eslint-disable-line no-undef
 	};
 
 	addStyles(`
@@ -160,8 +204,12 @@
 	`);
 
 	onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
+	onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
 
-	document.querySelector('#hgbar_freegifts').addEventListener('click', function () {
-		makeButtons();
-	});
+	const buttonLink = document.querySelector('#hgbar_freegifts');
+	if (buttonLink) {
+		buttonLink.addEventListener('click', function () {
+			makeButtons();
+		});
+	}
 })());
