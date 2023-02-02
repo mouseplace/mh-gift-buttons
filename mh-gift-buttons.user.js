@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.1.2
+// @version      1.2.0
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -133,7 +133,9 @@
 		buttonContainer.appendChild(returnButton);
 
 		const giftFooter = document.querySelector('.giftSelectorView-inbox-footer');
-		giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
+		if (giftFooter && giftFooter.firstChild) {
+			giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
+		}
 	};
 
 	/**
@@ -151,13 +153,44 @@
 			return;
 		}
 
-		okayBtn.click();
+		setTimeout(() => {
+			okayBtn.click();
 
-		if ('undefined' === typeof activejsDialog || ! activejsDialog || ! activejsDialog.hide) { // eslint-disable-line no-undef
+			if ('undefined' === typeof activejsDialog || ! activejsDialog || ! activejsDialog.hide) { // eslint-disable-line no-undef
+				return;
+			}
+
+			activejsDialog.hide(); // eslint-disable-line no-undef
+		}, 2000);
+	};
+
+	const returnRaffleTickets = () => {
+		const draws = document.querySelectorAll('.message.daily_draw.notification.ballot');
+		if (draws.length <= 0) {
 			return;
 		}
 
-		activejsDialog.hide(); // eslint-disable-line no-undef
+		draws.forEach((draw) => {
+			const btn = draw.querySelector('input');
+			if (! btn) {
+				return;
+			}
+			btn.click();
+		});
+	};
+
+	const addReturnRaffleTicketsButton = () => {
+		const drawTab = document.querySelector('[data-tab="daily_draw"]');
+		if (! drawTab) {
+			return;
+		}
+		// Create a button and append it to the draw tab
+		const btn = document.createElement('button');
+		btn.innerText = 'Return';
+		btn.id = 'return-raffle-tickets';
+
+		btn.addEventListener('click', returnRaffleTickets);
+		drawTab.appendChild(btn);
 	};
 
 	addStyles(`
@@ -201,10 +234,27 @@
 			cursor: default;
 			box-shadow: 0 0 3px #ff0000;
 		}
+
+		#return-raffle-tickets {
+			box-shadow: 1px 1px 1px #eee;
+			font-size: 10px;
+			text-align: center;
+			text-decoration: none;
+			margin-left: 10px;
+			background: #f5f5f5;
+			border: 1px solid #ccc;
+			border-radius: 3px;
+			padding: 3px 7px;
+			font-weight: 600;
+			color: #333;
+			cursor: pointer;
+		}
 	`);
 
 	onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
 	onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
+
+	onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
 
 	const buttonLink = document.querySelector('#hgbar_freegifts');
 	if (buttonLink) {
