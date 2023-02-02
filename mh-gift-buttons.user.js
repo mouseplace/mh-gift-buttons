@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.2.0
+// @version      1.2.1
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -164,6 +164,15 @@
 		}, 2000);
 	};
 
+	const addReturnRaffleListener = () => {
+		const inbox = document.getElementById('hgbar_messages');
+		if (! inbox) {
+			return;
+		}
+
+		inbox.addEventListener('click', addReturnRaffleTicketsButton);
+	};
+
 	const returnRaffleTickets = () => {
 		const draws = document.querySelectorAll('.message.daily_draw.notification.ballot');
 		if (draws.length <= 0) {
@@ -184,13 +193,20 @@
 		if (! drawTab) {
 			return;
 		}
+
+		const exists = document.getElementById('return-raffle-tickets');
+		if (exists) {
+			return;
+		}
+
 		// Create a button and append it to the draw tab
 		const btn = document.createElement('button');
 		btn.innerText = 'Return';
 		btn.id = 'return-raffle-tickets';
 
 		btn.addEventListener('click', returnRaffleTickets);
-		drawTab.appendChild(btn);
+
+		drawTab.insertBefore(btn, drawTab.firstChild.nextSibling);
 	};
 
 	addStyles(`
@@ -248,6 +264,12 @@
 			font-weight: 600;
 			color: #333;
 			cursor: pointer;
+
+			opacity: 0.5;
+		}
+
+		.active #return-raffle-tickets {
+			opacity: 1;
 		}
 	`);
 
@@ -255,6 +277,7 @@
 	onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
 
 	onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
+	addReturnRaffleListener();
 
 	const buttonLink = document.querySelector('#hgbar_freegifts');
 	if (buttonLink) {
