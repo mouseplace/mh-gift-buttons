@@ -251,13 +251,19 @@
 			box-shadow: 0 0 3px #ff0000;
 		}
 
+		#messengerUINotification .tabs a[data-tab="daily_draw"] .counter {
+			right: -1px;
+			z-index: 10;
+			top: 3px;
+		}
+
 		#return-raffle-tickets {
 			box-shadow: 1px 1px 1px #eee;
 			font-size: 10px;
 			text-align: center;
 			text-decoration: none;
 			margin-left: 10px;
-			background: #f5f5f5;
+			background-color: #f5f5f5;
 			border: 1px solid #ccc;
 			border-radius: 3px;
 			padding: 3px 7px;
@@ -270,6 +276,11 @@
 
 		.active #return-raffle-tickets {
 			opacity: 1;
+		}
+
+		#return-raffle-tickets:hover {
+			background-color: #ececec;
+			box-shadow: inset 0px 1px 2px #cccccc;
 		}
 	`);
 
