@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.3.0
+// @version      1.3.1
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -179,12 +179,21 @@
 			return;
 		}
 
+		let count = 0;
 		draws.forEach((draw) => {
 			const btn = draw.querySelector('input');
 			if (! btn) {
 				return;
 			}
-			btn.click();
+
+			// Pause 1 second between clicks
+			setTimeout(() => {
+				if (count <= 20) {
+					btn.click();
+				}
+			}, 1000 * count);
+
+			count++;
 		});
 	};
 
