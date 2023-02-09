@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.3.1
+// @version      1.3.2
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -186,12 +186,9 @@
 				return;
 			}
 
-			// Pause 1 second between clicks
-			setTimeout(() => {
-				if (count <= 20) {
-					btn.click();
-				}
-			}, 1000 * count);
+			if (count <= 20) {
+				btn.click();
+			}
 
 			count++;
 		});
