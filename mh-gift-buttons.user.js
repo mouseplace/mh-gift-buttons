@@ -1,168 +1,174 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.4.1
+// @version      1.5.0
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
 // @namespace    bradp
 // @match        https://www.mousehuntgame.com/*
-// @icon         https://brrad.com/mouse.png
+// @icon         https://i.mouse.rip/mouse.png
 // @grant        none
 // @run-at       document-end
 // @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.2.0/mousehunt-utils.js
 // ==/UserScript==
 
 ((function () {
-	/**
-	 * Send the gifts.
-	 *
-	 * @param {string} buttonClass The class of the button to click.
-	 */
-	const sendGifts = (buttonClass) => {
-		if (hg && hg.views?.GiftSelectorView?.show) { // eslint-disable-line no-undef
-			hg.views.GiftSelectorView.show(); // eslint-disable-line no-undef
-		}
+  /**
+   * Send the gifts.
+   *
+   * @param {string} buttonClass The class of the button to click.
+   */
+  const sendGifts = (buttonClass) => {
+    if (hg && hg.views?.GiftSelectorView?.show) { // eslint-disable-line no-undef
+      hg.views.GiftSelectorView.show(); // eslint-disable-line no-undef
+    }
 
-		const innerButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.' + buttonClass + ':not(.disbled):not(.selected)');
-		if (! innerButtons.length) {
-			return;
-		}
+    const innerButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.' + buttonClass + ':not(.disbled):not(.selected)');
+    if (! innerButtons.length) {
+      return;
+    }
 
-		innerButtons.forEach((button) => {
-			button.click();
-		});
+    innerButtons.forEach((button) => {
+      button.click();
+    });
 
-		const confirm = document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small');
-		if (confirm) {
-			confirm.click();
-		}
-	};
+    const confirm = document.querySelector('.mousehuntActionButton.giftSelectorView-action-confirm.small');
+    if (confirm) {
+      confirm.click();
+    }
+  };
 
-	/**
-	 * Make a button.
-	 *
-	 * @param {string} text        The text to put in the button.
-	 * @param {string} buttonClass Class selector to use to grab the button.
-	 * @param {string} limitClass  Class selector to use to grab the limit.
-	 */
-	const makeButton = (text, buttonClass, limitClass) => {
-		const btn = document.createElement('a');
-		btn.innerHTML = text;
+  /**
+   * Make a button.
+   *
+   * @param {string} text        The text to put in the button.
+   * @param {string} buttonClass Class selector to use to grab the button.
+   * @param {string} limitClass  Class selector to use to grab the limit.
+   */
+  const makeButton = (text, buttonClass, limitClass) => {
+    const btn = document.createElement('a');
+    btn.innerHTML = text;
 
-		const limit = document.querySelector('.giftSelectorView-num' + limitClass + 'ActionsRemaining');
-		if (limit && limit.innerText === '0') {
-			btn.classList.add('disabled');
-			btn.classList.add('disabled');
-		} else {
-			btn.addEventListener('click', () => {
-				sendGifts(buttonClass);
-			});
-		}
+    const limit = document.querySelector('.giftSelectorView-num' + limitClass + 'ActionsRemaining');
+    if (limit && limit.innerText === '0') {
+      btn.classList.add('disabled');
+      btn.classList.add('disabled');
+    } else {
+      btn.addEventListener('click', () => {
+        sendGifts(buttonClass);
+      });
+    }
 
-		return btn;
-	};
+    return btn;
+  };
 
-	/**
-	 * Make the buttons and add them to the page.
-	 */
-	const makeButtons = () => {
-		if (document.getElementById('bulk-gifting-gift-buttons')) {
-			return;
-		}
+  /**
+   * Make the buttons and add them to the page.
+   */
+  const makeButtons = () => {
+    if (document.getElementById('bulk-gifting-gift-buttons')) {
+      return;
+    }
 
-		const buttonContainer = document.createElement('div');
-		buttonContainer.id = 'bulk-gifting-gift-buttons';
+    const buttonContainer = document.createElement('div');
+    buttonContainer.id = 'bulk-gifting-gift-buttons';
 
-		const acceptButton = makeButton('Accept All', 'claim', 'Claim');
-		buttonContainer.appendChild(acceptButton);
+    const acceptButton = makeButton('Accept All', 'claim', 'Claim');
+    buttonContainer.appendChild(acceptButton);
 
-		const returnButton = makeButton('Accept & Return All', 'return', 'Send');
-		buttonContainer.appendChild(returnButton);
+    const returnButton = makeButton('Accept & Return All', 'return', 'Send');
+    buttonContainer.appendChild(returnButton);
 
-		const giftFooter = document.querySelector('.giftSelectorView-inbox-footer');
-		if (giftFooter && giftFooter.firstChild) {
-			giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
-		}
-	};
+    const giftFooter = document.querySelector('.giftSelectorView-inbox-footer');
+    if (giftFooter && giftFooter.firstChild) {
+      giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
+    }
+  };
 
-	/**
-	 * On a sucessful send, close the modal.
-	 *
-	 * @param {Object} request The request.
-	 */
-	const checkForSuccessfulGiftSend = (request) => {
-		if (! request || 'undefined' === request.friends_sent_gifts || ! request.friends_sent_gifts.length > 1) {
-			return;
-		}
+  /**
+   * On a sucessful send, close the modal.
+   *
+   * @param {Object} request The request.
+   */
+  const checkForSuccessfulGiftSend = (request) => {
+    if (! request || 'undefined' === request.friends_sent_gifts || ! request.friends_sent_gifts.length > 1) {
+      return;
+    }
 
-		const okayBtn = document.querySelector('.giftSelectorView-confirmPopup-submitConfirmButton');
-		if (! okayBtn) {
-			return;
-		}
+    const okayBtn = document.querySelector('.giftSelectorView-confirmPopup-submitConfirmButton');
+    if (! okayBtn) {
+      return;
+    }
 
-		setTimeout(() => {
-			okayBtn.click();
+    setTimeout(() => {
+      okayBtn.click();
 
-			if ('undefined' === typeof activejsDialog || ! activejsDialog || ! activejsDialog.hide) { // eslint-disable-line no-undef
-				return;
-			}
+      if ('undefined' === typeof activejsDialog || ! activejsDialog || ! activejsDialog.hide) { // eslint-disable-line no-undef
+        return;
+      }
 
-			activejsDialog.hide(); // eslint-disable-line no-undef
-		}, 2000);
-	};
+      activejsDialog.hide(); // eslint-disable-line no-undef
+    }, 2000);
+  };
 
-	const addReturnRaffleListener = () => {
-		const inbox = document.getElementById('hgbar_messages');
-		if (! inbox) {
-			return;
-		}
+  const addReturnRaffleListener = () => {
+    const inbox = document.getElementById('hgbar_messages');
+    if (! inbox) {
+      return;
+    }
 
-		inbox.addEventListener('click', addReturnRaffleTicketsButton);
-	};
+    inbox.addEventListener('click', addReturnRaffleTicketsButton);
+  };
 
-	const returnRaffleTickets = () => {
-		const draws = document.querySelectorAll('.message.daily_draw.notification.ballot');
-		if (draws.length <= 0) {
-			return;
-		}
+  const returnRaffleTickets = async () => {
+    const draws = document.querySelectorAll('.message.daily_draw.notification.ballot');
+    if (draws.length <= 0) {
+      return;
+    }
 
-		let count = 0;
-		draws.forEach((draw) => {
-			const btn = draw.querySelector('input');
-			if (! btn) {
-				return;
-			}
+    for (let i = 0; i <= 20; i++) {
+      const draw = draws[ i ];
 
-			if (count <= 20) {
-				btn.click();
-			}
+      const returnButton = draw.querySelector('input');
+      if (! returnButton) {
+        continue;
+      }
 
-			count++;
-		});
-	};
+      const previousSibling = draw.previousSibling;
+      if (previousSibling) {
+        const error = previousSibling.querySelector('.error');
+        if (error) {
+          break;
+        }
+      }
+      returnButton.click();
 
-	const addReturnRaffleTicketsButton = () => {
-		const drawTab = document.querySelector('[data-tab="daily_draw"]');
-		if (! drawTab) {
-			return;
-		}
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  };
 
-		const exists = document.getElementById('return-raffle-tickets');
-		if (exists) {
-			return;
-		}
+  const addReturnRaffleTicketsButton = () => {
+    const drawTab = document.querySelector('[data-tab="daily_draw"]');
+    if (! drawTab) {
+      return;
+    }
 
-		// Create a button and append it to the draw tab
-		const btn = document.createElement('button');
-		btn.innerText = 'Return';
-		btn.id = 'return-raffle-tickets';
+    const exists = document.getElementById('return-raffle-tickets');
+    if (exists) {
+      return;
+    }
 
-		btn.addEventListener('click', returnRaffleTickets);
+    // Create a button and append it to the draw tab
+    const btn = document.createElement('button');
+    btn.innerText = 'Return';
+    btn.id = 'return-raffle-tickets';
 
-		drawTab.insertBefore(btn, drawTab.firstChild.nextSibling);
-	};
+    btn.addEventListener('click', returnRaffleTickets);
 
-	addStyles(`
+    drawTab.insertBefore(btn, drawTab.firstChild.nextSibling);
+  };
+
+  addStyles(`
 		#bulk-gifting-gift-buttons {
 			text-align: right;
 			margin: 0 0 10px;
@@ -265,16 +271,16 @@
 		}
 	`);
 
-	onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
-	onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
+  onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
+  onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
 
-	onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
-	addReturnRaffleListener();
+  onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
+  addReturnRaffleListener();
 
-	const buttonLink = document.querySelector('#hgbar_freegifts');
-	if (buttonLink) {
-		buttonLink.addEventListener('click', function () {
-			makeButtons();
-		});
-	}
+  const buttonLink = document.querySelector('#hgbar_freegifts');
+  if (buttonLink) {
+    buttonLink.addEventListener('click', function () {
+      makeButtons();
+    });
+  }
 })());
