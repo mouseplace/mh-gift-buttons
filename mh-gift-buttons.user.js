@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.5.0
+// @version      1.5.1
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -290,8 +290,8 @@
   onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
   onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
 
-  onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
-  addReturnRaffleListener();
+  // onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
+  // addReturnRaffleListener();
 
   const buttonLink = document.querySelector('#hgbar_freegifts');
   if (buttonLink) {
