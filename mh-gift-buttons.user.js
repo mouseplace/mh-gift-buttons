@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.5.1
+// @version      1.5.3
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -111,79 +111,6 @@
     }, 2000);
   };
 
-  const addReturnRaffleListener = () => {
-    const inbox = document.getElementById('hgbar_messages');
-    if (! inbox) {
-      return;
-    }
-
-    inbox.addEventListener('click', addReturnRaffleTicketsButton);
-  };
-
-  const returnRaffleTickets = async () => {
-    const draws = document.querySelectorAll('.message.daily_draw.notification.ballot');
-    if (draws.length <= 0) {
-      return;
-    }
-
-    let count = 0;
-    const counter = document.querySelector('[data-tab="daily_draw"] .counter');
-    if (counter) {
-      count = parseInt(counter.innerText);
-    }
-
-    for (let i = 0; i <= 20; i++) {
-      const draw = draws[ i ];
-
-      const returnButton = draw.querySelector('input');
-      if (! returnButton) {
-        continue;
-      }
-
-      const previousSibling = draw.previousSibling;
-      if (previousSibling) {
-        const error = previousSibling.querySelector('.error');
-        if (error) {
-          break;
-        }
-      }
-      returnButton.click();
-
-      const tab = document.querySelector('[data-tab="daily_draw"]');
-      if (! tab) {
-        break;
-      }
-
-      if (counter && count > 0) {
-        count = parseInt(counter.innerText);
-        counter.innerText = count - 1;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  };
-
-  const addReturnRaffleTicketsButton = () => {
-    const drawTab = document.querySelector('[data-tab="daily_draw"]');
-    if (! drawTab) {
-      return;
-    }
-
-    const exists = document.getElementById('return-raffle-tickets');
-    if (exists) {
-      return;
-    }
-
-    // Create a button and append it to the draw tab
-    const btn = document.createElement('button');
-    btn.innerText = 'Return';
-    btn.id = 'return-raffle-tickets';
-
-    btn.addEventListener('click', returnRaffleTickets);
-
-    drawTab.insertBefore(btn, drawTab.firstChild.nextSibling);
-  };
-
   addStyles(`#bulk-gifting-gift-buttons {
     text-align: right;
     margin: 0 0 10px;
@@ -219,43 +146,9 @@
     background-color: #eee;
   }
 
-
   #bulk-gifting-gift-buttons a.disabled:hover {
     cursor: default;
     box-shadow: 0 0 3px #ff0000;
-  }
-
-  #messengerUINotification .tabs a[data-tab="daily_draw"] .counter {
-    right: -1px;
-    z-index: 10;
-    top: 3px;
-  }
-
-  #return-raffle-tickets {
-    box-shadow: 1px 1px 1px #eee;
-    font-size: 10px;
-    text-align: center;
-    text-decoration: none;
-    margin-left: 10px;
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    padding: 3px 7px;
-    font-weight: 600;
-    color: #333;
-    cursor: pointer;
-
-    opacity: 0.5;
-  }
-
-  .active #return-raffle-tickets {
-    opacity: 1;
-    transition: 60s;
-  }
-
-  #return-raffle-tickets:hover {
-    background-color: #ececec;
-    box-shadow: inset 0px 1px 2px #cccccc;
   }
 
   .giftSelectorView-inbox-giftContainer {
@@ -289,9 +182,6 @@
 
   onAjaxRequest(makeButtons, '/managers/ajax/users/socialGift.php');
   onAjaxRequest(checkForSuccessfulGiftSend, '/managers/ajax/users/socialGift.php');
-
-  // onAjaxRequest(addReturnRaffleTicketsButton, '/managers/ajax/users/messages.php');
-  // addReturnRaffleListener();
 
   const buttonLink = document.querySelector('#hgbar_freegifts');
   if (buttonLink) {
