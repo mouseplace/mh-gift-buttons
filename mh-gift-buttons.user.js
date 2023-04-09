@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.5.3
+// @version      1.5.4
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -112,33 +112,34 @@
   };
 
   addStyles(`#bulk-gifting-gift-buttons {
-    text-align: right;
     margin: 0 0 10px;
+    text-align: right;
   }
 
   #bulk-gifting-gift-buttons a {
     display: inline-block;
+    padding: 0 10px;
+    font-size: 12px;
+    line-height: 30px;
+    color: #000;
+    text-align: center;
+    text-decoration: none;
     background-color: #eee;
-    box-shadow: 1px 1px 1px #eee;
     border: 1px solid #000;
     border-radius: 5px;
-    font-size: 12px;
-    text-align: center;
-    line-height: 30px;
-    text-decoration: none;
-    color: black;
-    padding: 0 10px;
+    box-shadow: 1px 1px 1px #eee;
   }
 
   #bulk-gifting-gift-buttons a:last-child:hover,
-  #bulk-gifting-gift-buttons a:hover {
+  #bulk-gifting-gift-buttons a:hover, #bulk-gifting-gift-buttons a:last-child:focus,
+  #bulk-gifting-gift-buttons a:focus {
     background-color: #ffae00;
     box-shadow: 0 0 5px #fff inset, 1px 1px 1px #fff;
   }
 
   #bulk-gifting-gift-buttons a:last-child {
-    background-color: #fff600;
     margin-left: 10px;
+    background-color: #fff600;
   }
 
   #bulk-gifting-gift-buttons a.disabled,
@@ -146,15 +147,15 @@
     background-color: #eee;
   }
 
-  #bulk-gifting-gift-buttons a.disabled:hover {
+  #bulk-gifting-gift-buttons a.disabled:hover, #bulk-gifting-gift-buttons a.disabled:focus {
     cursor: default;
-    box-shadow: 0 0 3px #ff0000;
+    box-shadow: 0 0 3px #f00;
   }
 
   .giftSelectorView-inbox-giftContainer {
+    height: auto;
     min-height: 300px;
     max-height: 75vh;
-    height: auto;
   }
 
   .giftSelectorView-inbox-giftRow.complete {
@@ -170,9 +171,9 @@
   }
 
   .giftSelectorView-inbox-giftRow.complete .itemImage {
+    display: inline-block;
     width: 25px;
     height: 25px;
-    display: inline-block;
   }
 
   .giftSelectorView-inbox-giftRow.complete .giftSelectorView-inbox-gift-details {
