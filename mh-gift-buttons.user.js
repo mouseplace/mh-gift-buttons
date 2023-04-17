@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.5.5
+// @version      1.6.0
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -9,26 +9,51 @@
 // @icon         https://i.mouse.rip/mouse.png
 // @grant        none
 // @run-at       document-end
-// @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.5.2/mousehunt-utils.js
+// @require      https://greasyfork.org/scripts/464008-mousehunt-utils-beta/code/%F0%9F%90%AD%EF%B8%8F%20MouseHunt%20Utils%20Beta.js?version=1175806
 // ==/UserScript==
 
-((function () {
+// @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.5.2/mousehunt-utils.js
+(function () {
+  'use strict';
+
   /**
    * Send the gifts.
    *
-   * @param {string} buttonClass The class of the button to click.
+   * @param {string}  buttonClass The class of the button to click.
+   * @param {number}  limit       The number of gifts to send.
+   * @param {boolean} reverse     Whether to reverse the order of the clicks.
    */
-  const sendGifts = (buttonClass) => {
+  const sendGifts = (buttonClass, limit = 15, reverse = false) => {
     if (hg && hg.views?.GiftSelectorView?.show) { // eslint-disable-line no-undef
       hg.views.GiftSelectorView.show(); // eslint-disable-line no-undef
     }
 
-    const innerButtons = document.querySelectorAll('.giftSelectorView-friendRow-action.' + buttonClass + ':not(.disbled):not(.selected)');
+    const expand = document.querySelectorAll('.giftSelectorView-claimableGift');
+    if (expand) {
+      expand.forEach((el) => {
+        el.classList.add('expanded');
+      });
+    }
+
+    let innerButtons = document.querySelectorAll(`.giftSelectorView-friendRow-action.${buttonClass}:not(.disbled):not(.selected)`);
     if (! innerButtons.length) {
       return;
     }
 
+    // If we're doing it in reverse order, reverse the array.
+    if (getSetting('gift-buttons-reverse', false) || reverse) {
+      innerButtons = Array.prototype.slice.call(innerButtons);
+      innerButtons.reverse();
+    }
+
+    let sent = 0;
     innerButtons.forEach((button) => {
+      if (sent >= limit) {
+        return;
+      }
+
+      sent++;
+
       button.click();
     });
 
@@ -38,28 +63,87 @@
     }
   };
 
-  /**
-   * Make a button.
-   *
-   * @param {string} text        The text to put in the button.
-   * @param {string} buttonClass Class selector to use to grab the button.
-   * @param {string} limitClass  Class selector to use to grab the limit.
-   */
-  const makeButton = (text, buttonClass, limitClass) => {
-    const btn = document.createElement('a');
-    btn.innerHTML = text;
+  const makePaidGiftsButton = (buttonContainer) => {
+    const hasPaidGifts = document.querySelectorAll('.giftSelectorView-friendRow-returnCost');
+    if (! hasPaidGifts.length) {
+      return;
+    }
 
-    const limit = document.querySelector('.giftSelectorView-num' + limitClass + 'ActionsRemaining');
-    if (limit && limit.innerText === '0') {
-      btn.classList.add('disabled');
-      btn.classList.add('disabled');
+    const paidGiftsButton = makeElement('button', ['mh-gift-button', 'mh-gift-buttons-paid-gifts'], 'Accept & Return Paid Gifts');
+    paidGiftsButton.addEventListener('click', () => {
+      hg.views.GiftSelectorView.show(); // eslint-disable-line no-undef
+      hg.views?.GiftSelectorView.showTab('claim_paid_gifts', 'selectClaimableGift');
+
+      let acceptedGifts = JSON.parse(localStorage.getItem('mh-gift-buttons-accepted-paid-gifts'));
+      if (! acceptedGifts) {
+        acceptedGifts = {};
+      }
+
+      const newAcceptedGifts = {};
+
+      const gifts = document.querySelectorAll('.giftSelectorView-friendRow.paidgift');
+      gifts.forEach((gift) => {
+        const friendId = gift.getAttribute('data-snuid');
+        const giftId = gift.parentNode.parentNode.parentNode.getAttribute('data-item-type');
+
+        const acceptButton = gift.querySelector('.giftSelectorView-friendRow-action.claim');
+        const returnButton = gift.querySelector('.giftSelectorView-friendRow-action.return');
+
+        if (! giftId || ! friendId || ! acceptButton || ! returnButton) {
+          return;
+        }
+
+        if (! acceptedGifts[ giftId ] || ! acceptedGifts[ giftId ].includes(friendId)) {
+          returnButton.click();
+
+          // save the gift as accepted.
+          if (! newAcceptedGifts[ giftId ]) {
+            newAcceptedGifts[ giftId ] = [];
+          }
+
+          newAcceptedGifts[ giftId ].push(friendId);
+        } else {
+          acceptButton.click();
+        }
+      });
+
+      if (newAcceptedGifts !== acceptedGifts) {
+        localStorage.setItem('mh-gift-buttons-accepted-paid-gifts', JSON.stringify(newAcceptedGifts));
+      }
+    });
+
+    buttonContainer.appendChild(paidGiftsButton);
+  };
+
+  const makeAcceptButton = (buttonContainer) => {
+    const acceptButton = makeElement('button', ['mh-gift-button', 'mh-gift-buttons-accept'], 'Accept All');
+    const acceptLimit = document.querySelector('.giftSelectorView-numClaimActionsRemaining');
+    if (acceptLimit && acceptLimit.innerText === '0') {
+      acceptButton.classList.add('disabled');
     } else {
-      btn.addEventListener('click', () => {
-        sendGifts(buttonClass);
+      acceptButton.addEventListener('click', () => {
+        sendGifts('claim', acceptLimit ? parseInt(acceptLimit.innerText, 10) : 15);
       });
     }
 
-    return btn;
+    buttonContainer.appendChild(acceptButton);
+  };
+
+  const makeReturnButton = (buttonContainer) => {
+    // Return button.
+    const returnWrapper = makeElement('div', 'mh-gift-buttons-return-wrapper');
+    const returnButton = makeElement('button', ['mh-gift-button', 'mh-gift-buttons-return'], 'Accept & Return All');
+    const returnLimit = document.querySelector('.giftSelectorView-numSendActionsRemaining');
+    if (returnLimit && returnLimit.innerText === '0') {
+      returnButton.classList.add('disabled');
+    } else {
+      returnButton.addEventListener('click', () => {
+        sendGifts('return', returnLimit ? parseInt(returnLimit.innerText, 10) : 25);
+      });
+    }
+
+    returnWrapper.appendChild(returnButton);
+    buttonContainer.appendChild(returnWrapper);
   };
 
   /**
@@ -73,12 +157,11 @@
     const buttonContainer = document.createElement('div');
     buttonContainer.id = 'bulk-gifting-gift-buttons';
 
-    const acceptButton = makeButton('Accept All', 'claim', 'Claim');
-    buttonContainer.appendChild(acceptButton);
+    makePaidGiftsButton(buttonContainer);
+    makeAcceptButton(buttonContainer);
+    makeReturnButton(buttonContainer);
 
-    const returnButton = makeButton('Accept & Return All', 'return', 'Send');
-    buttonContainer.appendChild(returnButton);
-
+    // Add the buttons to the page.
     const giftFooter = document.querySelector('.giftSelectorView-inbox-footer');
     if (giftFooter && giftFooter.firstChild) {
       giftFooter.insertBefore(buttonContainer, giftFooter.firstChild);
@@ -112,15 +195,16 @@
   };
 
   addStyles(`#bulk-gifting-gift-buttons {
-    margin: 0 0 10px;
-    text-align: right;
+    margin-bottom: 10px;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
   }
 
-  #bulk-gifting-gift-buttons a {
-    display: inline-block;
-    padding: 0 10px;
+  #bulk-gifting-gift-buttons button {
+    display: block;
+    padding: 10px;
     font-size: 12px;
-    line-height: 30px;
     color: #000;
     text-align: center;
     text-decoration: none;
@@ -130,27 +214,65 @@
     box-shadow: 1px 1px 1px #eee;
   }
 
-  #bulk-gifting-gift-buttons a:last-child:hover,
-  #bulk-gifting-gift-buttons a:hover, #bulk-gifting-gift-buttons a:last-child:focus,
-  #bulk-gifting-gift-buttons a:focus {
+  #bulk-gifting-gift-buttons .mh-gift-buttons-accept {
+    margin-right: 136px;
+  }
+
+  #bulk-gifting-gift-buttons .mh-gift-buttons-paid-gifts {
+    margin-right: 10px;
+  }
+
+  #bulk-gifting-gift-buttons .mh-gift-buttons-return-wrapper {
+    display: block;
+    padding-top: 90px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 136px;
+  }
+
+  #bulk-gifting-gift-buttons .mh-gift-buttons-accept-reverse {
+    display: none;
+    line-height: 13px;
+    padding: 4px 10px;
+    color: #333333;
+  }
+
+  .mh-gift-button.mh-gift-buttons-accept-reverse {
+    position: absolute;
+    bottom: 40px;
+    right: 0;
+    width: 126px;
+  }
+
+  #bulk-gifting-gift-buttons .mh-gift-buttons-return-wrapper:hover .mh-gift-buttons-accept-reverse {
+    display: block;
+  }
+
+  #bulk-gifting-gift-buttons .mh-gift-buttons-return,
+  #bulk-gifting-gift-buttons .mh-gift-buttons-accept-reverse {
+    margin-left: 10px;
+    background-color: #fff600;
+    width: 126px;
+  }
+
+  #bulk-gifting-gift-buttons button:hover,
+  #bulk-gifting-gift-buttons button:focus,
+  #bulk-gifting-gift-buttons .mh-gift-buttons-return:hover,
+  #bulk-gifting-gift-buttons .mh-gift-buttons-return:focus,
+  #bulk-gifting-gift-buttons .mh-gift-buttons-accept-reverse:hover,
+  #bulk-gifting-gift-buttons .mh-gift-buttons-accept-reverse:focus {
     background-color: #ffae00;
     box-shadow: 0 0 5px #fff inset, 1px 1px 1px #fff;
   }
 
-  #bulk-gifting-gift-buttons a:last-child {
-    margin-left: 10px;
-    background-color: #fff600;
-  }
-
-  #bulk-gifting-gift-buttons a.disabled,
-  #bulk-gifting-gift-buttons a:last-child.disabled {
+  #bulk-gifting-gift-buttons button.disabled:hover,
+  #bulk-gifting-gift-buttons button.disabled:focus {
     background-color: #eee;
-  }
-
-  #bulk-gifting-gift-buttons a.disabled:hover, #bulk-gifting-gift-buttons a.disabled:focus {
     cursor: default;
     box-shadow: 0 0 3px #f00;
   }
+
 
   .giftSelectorView-inbox-giftContainer {
     height: auto;
@@ -190,4 +312,15 @@
       makeButtons();
     });
   }
-})());
+
+  const tab = addSettingsTab();
+
+  addSetting(
+    'Gift Buttons - Reverse Order',
+    'gift-buttons-reverse',
+    false,
+    'Accept and send gifts from oldest to newest instead of newest to oldest.',
+    {},
+    tab
+  );
+}());
