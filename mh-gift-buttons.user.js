@@ -215,45 +215,11 @@
   }
 
   #bulk-gifting-gift-buttons .mh-gift-buttons-accept {
-    margin-right: 136px;
+    margin-right: 10px;
   }
 
   #bulk-gifting-gift-buttons .mh-gift-buttons-paid-gifts {
     margin-right: 10px;
-  }
-
-  #bulk-gifting-gift-buttons .mh-gift-buttons-return-wrapper {
-    display: block;
-    padding-top: 90px;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 136px;
-  }
-
-  #bulk-gifting-gift-buttons .mh-gift-buttons-accept-reverse {
-    display: none;
-    line-height: 13px;
-    padding: 4px 10px;
-    color: #333333;
-  }
-
-  .mh-gift-button.mh-gift-buttons-accept-reverse {
-    position: absolute;
-    bottom: 40px;
-    right: 0;
-    width: 126px;
-  }
-
-  #bulk-gifting-gift-buttons .mh-gift-buttons-return-wrapper:hover .mh-gift-buttons-accept-reverse {
-    display: block;
-  }
-
-  #bulk-gifting-gift-buttons .mh-gift-buttons-return,
-  #bulk-gifting-gift-buttons .mh-gift-buttons-accept-reverse {
-    margin-left: 10px;
-    background-color: #fff600;
-    width: 126px;
   }
 
   #bulk-gifting-gift-buttons button:hover,
