@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.6.0
+// @version      1.6.1
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -239,6 +239,9 @@
     box-shadow: 0 0 3px #f00;
   }
 
+  #bulk-gifting-gift-buttons .mh-gift-buttons-return {
+    background-color: #fff600;
+  }
 
   .giftSelectorView-inbox-giftContainer {
     height: auto;
