@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.6.1
+// @version      1.6.2
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -9,7 +9,7 @@
 // @icon         https://i.mouse.rip/mouse.png
 // @grant        none
 // @run-at       document-end
-// @require      https://greasyfork.org/scripts/464008-mousehunt-utils-beta/code/%F0%9F%90%AD%EF%B8%8F%20MouseHunt%20Utils%20Beta.js?version=1175806
+// @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.6.3/mousehunt-utils.js
 // ==/UserScript==
 
 // @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.5.2/mousehunt-utils.js
