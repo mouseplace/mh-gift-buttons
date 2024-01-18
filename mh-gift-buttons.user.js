@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Gift Buttons
-// @version      1.6.2
+// @version      1.7.0
 // @description  Add buttons to easily accept and return all daily gifts.
 // @license      MIT
 // @author       bradp
@@ -10,9 +10,9 @@
 // @grant        none
 // @run-at       document-end
 // @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.6.3/mousehunt-utils.js
+// @require      https://cdn.jsdelivr.net/npm/script-migration@1.1.1
 // ==/UserScript==
 
-// @require      https://cdn.jsdelivr.net/npm/mousehunt-utils@1.5.2/mousehunt-utils.js
 (function () {
   'use strict';
 
@@ -292,4 +292,6 @@
     {},
     tab
   );
+
+  migrateUserscript('🐭️ MouseHunt - Gift Buttons', 'https://greasyfork.org/en/scripts/449489-mousehunt-gift-buttons');
 }());
